@@ -18,3 +18,4 @@ img { width: 220px; height: 220px; padding: 0px; border: 1px solid #eee; margin:
 
 #step form { margin: 0px auto; text-align: center; }
 #se { margin:0px auto; background-color:#d63597; color:#fff; padding: 8px 12px; border:1px solid #d63597; box-shadow: 1px 1px 2px rgba(0,0,0,0.5);  cursor:pointer; }
+#se:hover {  background-color:#c62587; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);  cursor:pointer; }

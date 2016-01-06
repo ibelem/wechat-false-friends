@@ -39,126 +39,135 @@ loginfo = []
 
 
 def getUUID():
-  global uuid
+  try:
+    global uuid
 
-  url = 'https://login.weixin.qq.com/jslogin'
-  params = {
-  'appid': 'wx782c26e4c19acffb',
-  'fun': 'new',
-  'lang': 'zh_CN',
-  '_': int(time.time()),
-  }
+    url = 'https://login.weixin.qq.com/jslogin'
+    params = {
+    'appid': 'wx782c26e4c19acffb',
+    'fun': 'new',
+    'lang': 'zh_CN',
+    '_': int(time.time()),
+    }
 
-  request = urllib2.Request(url=url, data=urllib.urlencode(params))
-  response = urllib2.urlopen(request)
-  data = response.read()
+    request = urllib2.Request(url=url, data=urllib.urlencode(params))
+    response = urllib2.urlopen(request)
+    data = response.read()
 
-  # print data
+    # print data
 
-  # window.QRLogin.code = 200; window.QRLogin.uuid = "oZwt_bFfRg==";
-  regx = r'window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"'
-  pm = re.search(regx, data)
+    # window.QRLogin.code = 200; window.QRLogin.uuid = "oZwt_bFfRg==";
+    regx = r'window.QRLogin.code = (\d+); window.QRLogin.uuid = "(\S+?)"'
+    pm = re.search(regx, data)
 
-  code = pm.group(1)
-  uuid = pm.group(2)
+    code = pm.group(1)
+    uuid = pm.group(2)
 
-  if code == '200':
-    return True
+    if code == '200':
+      return True
 
-  return False
+    return False
+  except Exception:
+    return False
 
 def loggedRequest():
-  if webwxinit() == False:
-    print '初始化失败'
-    loginfo.append('初始化失败')
-    return
-
-  MemberList = webwxgetcontact()
-
-  MemberCount = len(MemberList)
-  print '通讯录共%s位好友' % MemberCount
-  loginfo.append('通讯录共%s位好友' % MemberCount)
-
-  ChatRoomName = ''
-  result = []
-  for i in xrange(0, int(math.ceil(MemberCount / float(MAX_GROUP_NUM)))):
-    UserNames = []
-    NickNames = []
-    DeletedList = ''
-    for j in xrange(0, MAX_GROUP_NUM):
-      if i * MAX_GROUP_NUM + j >= MemberCount:
-        break
-
-      Member = MemberList[i * MAX_GROUP_NUM + j]
-      UserNames.append(Member['UserName'])
-      NickNames.append(Member['NickName'].encode('utf-8'))
-
-    print '第%s组...' % (i + 1)
-    loginfo.append('第%s组...' % (i + 1))
-    print ', '.join(NickNames)
-    loginfo.append(', '.join(NickNames))
-
-    # 新建群组/添加成员
-    if ChatRoomName == '':
-      (ChatRoomName, DeletedList) = createChatroom(UserNames)
+  try:
+    if webwxinit() == False:
+      print '初始化失败'
+      loginfo.append('初始化失败')
     else:
-      DeletedList = addMember(ChatRoomName, UserNames)
+      MemberList = webwxgetcontact()
 
-    DeletedCount = len(DeletedList)
-    if DeletedCount > 0:
-      result += DeletedList
+      MemberCount = len(MemberList)
+      print '通讯录共%s位好友' % MemberCount
+      loginfo.append('通讯录共%s位好友' % MemberCount)
 
-    print '找到%s个被删好友' % DeletedCount
-    loginfo.append('找到%s个被删好友' % DeletedCount)
-    # raw_input()
+      ChatRoomName = ''
+      result = []
+      for i in xrange(0, int(math.ceil(MemberCount / float(MAX_GROUP_NUM)))):
+        UserNames = []
+        NickNames = []
+        DeletedList = ''
+        for j in xrange(0, MAX_GROUP_NUM):
+          if i * MAX_GROUP_NUM + j >= MemberCount:
+            break
 
-    # 删除成员
-    deleteMember(ChatRoomName, UserNames)
+          Member = MemberList[i * MAX_GROUP_NUM + j]
+          UserNames.append(Member['UserName'])
+          NickNames.append(Member['NickName'].encode('utf-8'))
 
-  # todo 删除群组
+        print '第%s组...' % (i + 1)
+        loginfo.append('第%s组...' % (i + 1))
+        print ', '.join(NickNames)
+        loginfo.append(', '.join(NickNames))
 
+        # 新建群组/添加成员
+        if ChatRoomName == '':
+          (ChatRoomName, DeletedList) = createChatroom(UserNames)
+        else:
+          DeletedList = addMember(ChatRoomName, UserNames)
 
-  resultNames = []
-  for Member in MemberList:
-    if Member['UserName'] in result:
-      NickName = Member['NickName']
-      if Member['RemarkName'] != '':
-        NickName += '(%s)' % Member['RemarkName']
-      resultNames.append(NickName.encode('utf-8'))
+        DeletedCount = len(DeletedList)
+        if DeletedCount > 0:
+          result += DeletedList
 
-  print '---------- 被删除的好友列表 ----------'
-  print '\n'.join(resultNames)
-  print '-----------------------------------'
-  return resultNames
+        print '找到%s个被删好友' % DeletedCount
+        loginfo.append('找到%s个被删好友' % DeletedCount)
+        # raw_input()
+
+        # 删除成员
+        deleteMember(ChatRoomName, UserNames)
+
+      # todo 删除群组
+
+      resultNames = []
+      for Member in MemberList:
+        if Member['UserName'] in result:
+          NickName = Member['NickName']
+          if Member['RemarkName'] != '':
+            NickName += '(%s)' % Member['RemarkName']
+          resultNames.append(NickName.encode('utf-8'))
+
+      print '---------- 被删除的好友列表 ----------'
+      print '\n'.join(resultNames)
+      print '-----------------------------------'
+      return resultNames
+  except Exception:
+    return loginfo
 
 class SearchHandler(tornado.web.RequestHandler):
   def post(self):
-    while waitForLogin() != '200':
-      pass
-
-    if login() == False:
-      result = ['']
-      loginfo = ['登录失败']
-      print '登录失败'
-      self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
-    else:
-      loggedRequest()
-      result = loggedRequest()
-      self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
+    try:
+      if waitForLogin() == '408':
+        self.render('error.html', title='微信被删好友查询', ex='登录超时, 请确认您已经在微信客户端扫描二维码并登录.')
+      elif waitForLogin() == '201':
+        self.render('error.html', title='微信被删好友查询', ex='您已扫描二维码, 但并未登录.')
+      if login() == False:
+        result = ['']
+        loginfo2 = ['登录失败']
+        print '登录失败'
+        self.render('error.html', title='微信被删好友查询',ex=loginfo2)
+      else:
+        result = loggedRequest()
+        self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
+    except Exception as ex:
+      self.render('error.html', title='微信被删好友查询', ex=ex.message)
 
 class HomeHandler(tornado.web.RequestHandler):
   def get(self):
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
-    urllib2.install_opener(opener)
+    try:
+      opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
+      urllib2.install_opener(opener)
 
-    if getUUID() == False:
-      print '获取uuid失败'
-      loginfo.append('获取uuid失败')
-      return
-
-    url = 'https://login.weixin.qq.com/qrcode/' + uuid
-    showQRImage()
-    self.render('home.html', title='微信被删好友查询', url=url)
+      if getUUID() == False:
+        print '获取uuid失败'
+        loginfo.append('获取uuid失败')
+        self.render('error.html', title='微信被删好友查询', ex="获取uuid失败")
+      url = 'https://login.weixin.qq.com/qrcode/' + uuid
+      showQRImage()
+      self.render('home.html', title='微信被删好友查询', url=url)
+    except Exception as ex:
+      self.render('error.html', title='微信被删好友查询', ex=ex.message)
 
 
 def showQRImage():
@@ -178,121 +187,124 @@ def showQRImage():
   tip = 1
 
 def waitForLogin():
-  global tip, base_uri, redirect_uri
-
-  url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?tip=%s&uuid=%s&_=%s' % (tip, uuid, int(time.time()))
-
-  request = urllib2.Request(url=url)
-  response = urllib2.urlopen(request)
-  data = response.read()
-
-  # print data
-
-  # window.code=500;
-  regx = r'window.code=(\d+);'
-  pm = re.search(regx, data)
-
-  code = pm.group(1)
-
-  if code == '201':  # 已扫描
-    print '成功扫描,请在手机上点击确认以登录'
-    loginfo.append('成功扫描,请在手机上点击确认以登录')
-    tip = 0
-  elif code == '200':  # 已登录
-    print '正在登录...'
-    regx = r'window.redirect_uri="(\S+?)";'
+  try:
+    global tip, base_uri, redirect_uri
+    url = 'https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login?tip=%s&uuid=%s&_=%s' % (tip, uuid, int(time.time()))
+    request = urllib2.Request(url=url)
+    response = urllib2.urlopen(request)
+    data = response.read()
+    # print data
+    # window.code=500;
+    regx = r'window.code=(\d+);'
     pm = re.search(regx, data)
-    redirect_uri = pm.group(1) + '&fun=new'
-    base_uri = redirect_uri[:redirect_uri.rfind('/')]
-  elif code == '408':  # 超时
-    pass
-  # elif code == '400' or code == '500':
 
-  return code
+    code = pm.group(1)
 
+    if code == '201':  # 已扫描
+      print '成功扫描,请在手机上点击确认以登录'
+      loginfo.append('成功扫描,请在手机上点击确认以登录')
+      tip = 0
+    elif code == '200':  # 已登录
+      print '正在登录...'
+      regx = r'window.redirect_uri="(\S+?)";'
+      pm = re.search(regx, data)
+      redirect_uri = pm.group(1) + '&fun=new'
+      base_uri = redirect_uri[:redirect_uri.rfind('/')]
+    elif code == '408':  # 超时
+      pass
+    # elif code == '400' or code == '500':
+
+    return code
+  except Exception:
+    return 408
 
 def login():
-  global skey, wxsid, wxuin, pass_ticket, BaseRequest
+  try:
+    global skey, wxsid, wxuin, pass_ticket, BaseRequest
 
-  request = urllib2.Request(url=redirect_uri)
-  response = urllib2.urlopen(request)
-  data = response.read()
+    request = urllib2.Request(url=redirect_uri)
+    response = urllib2.urlopen(request)
+    data = response.read()
 
-  # print data
+    # print data
 
-  '''
-    <error>
-      <ret>0</ret>
-      <message>OK</message>
-      <skey>xxx</skey>
-      <wxsid>xxx</wxsid>
-      <wxuin>xxx</wxuin>
-      <pass_ticket>xxx</pass_ticket>
-      <isgrayscale>1</isgrayscale>
-    </error>
-  '''
+    '''
+      <error>
+        <ret>0</ret>
+        <message>OK</message>
+        <skey>xxx</skey>
+        <wxsid>xxx</wxsid>
+        <wxuin>xxx</wxuin>
+        <pass_ticket>xxx</pass_ticket>
+        <isgrayscale>1</isgrayscale>
+      </error>
+    '''
 
-  doc = xml.dom.minidom.parseString(data)
-  root = doc.documentElement
+    doc = xml.dom.minidom.parseString(data)
+    root = doc.documentElement
 
-  for node in root.childNodes:
-    if node.nodeName == 'skey':
-      skey = node.childNodes[0].data
-    elif node.nodeName == 'wxsid':
-      wxsid = node.childNodes[0].data
-    elif node.nodeName == 'wxuin':
-      wxuin = node.childNodes[0].data
-    elif node.nodeName == 'pass_ticket':
-      pass_ticket = node.childNodes[0].data
+    for node in root.childNodes:
+      if node.nodeName == 'skey':
+        skey = node.childNodes[0].data
+      elif node.nodeName == 'wxsid':
+        wxsid = node.childNodes[0].data
+      elif node.nodeName == 'wxuin':
+        wxuin = node.childNodes[0].data
+      elif node.nodeName == 'pass_ticket':
+        pass_ticket = node.childNodes[0].data
 
-  # print 'skey: %s, wxsid: %s, wxuin: %s, pass_ticket: %s' % (skey, wxsid, wxuin, pass_ticket)
+    # print 'skey: %s, wxsid: %s, wxuin: %s, pass_ticket: %s' % (skey, wxsid, wxuin, pass_ticket)
 
-  if skey == '' or wxsid == '' or wxuin == '' or pass_ticket == '':
+    if skey == '' or wxsid == '' or wxuin == '' or pass_ticket == '':
+      return False
+
+    BaseRequest = {
+    'Uin': int(wxuin),
+    'Sid': wxsid,
+    'Skey': skey,
+    'DeviceID': deviceId,
+    }
+
+    return True
+  except Exception:
     return False
-
-  BaseRequest = {
-  'Uin': int(wxuin),
-  'Sid': wxsid,
-  'Skey': skey,
-  'DeviceID': deviceId,
-  }
-
-  return True
 
 
 def webwxinit():
-  url = base_uri + '/webwxinit?pass_ticket=%s&skey=%s&r=%s' % (pass_ticket, skey, int(time.time()))
-  params = {
-  'BaseRequest': BaseRequest
-  }
+  try:
+    url = base_uri + '/webwxinit?pass_ticket=%s&skey=%s&r=%s' % (pass_ticket, skey, int(time.time()))
+    params = {
+    'BaseRequest': BaseRequest
+    }
 
-  request = urllib2.Request(url=url, data=json.dumps(params))
-  request.add_header('ContentType', 'application/json; charset=UTF-8')
-  response = urllib2.urlopen(request)
-  data = response.read()
+    request = urllib2.Request(url=url, data=json.dumps(params))
+    request.add_header('ContentType', 'application/json; charset=UTF-8')
+    response = urllib2.urlopen(request)
+    data = response.read()
 
-  if DEBUG == True:
-    f = open(os.getcwd() + '/webwxinit.json', 'wb')
-    f.write(data)
-    f.close()
+    if DEBUG == True:
+      f = open(os.getcwd() + '/webwxinit.json', 'wb')
+      f.write(data)
+      f.close()
 
-  # print data
+    # print data
 
-  global ContactList, My
-  dic = json.loads(data)
-  ContactList = dic['ContactList']
-  My = dic['User']
+    global ContactList, My
+    dic = json.loads(data)
+    ContactList = dic['ContactList']
+    My = dic['User']
 
-  ErrMsg = dic['BaseResponse']['ErrMsg']
-  if len(ErrMsg) > 0:
-    print ErrMsg
+    ErrMsg = dic['BaseResponse']['ErrMsg']
+    if len(ErrMsg) > 0:
+      print ErrMsg
 
-  Ret = dic['BaseResponse']['Ret']
-  if Ret != 0:
+    Ret = dic['BaseResponse']['Ret']
+    if Ret != 0:
+      return False
+
+    return True
+  except Exception:
     return False
-
-  return True
-
 
 def webwxgetcontact():
   url = base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (pass_ticket, skey, int(time.time()))
