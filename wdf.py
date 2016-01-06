@@ -35,6 +35,7 @@ BaseRequest = {}
 
 ContactList = []
 My = []
+loginfo = []
 
 
 def getUUID():
@@ -72,16 +73,19 @@ def loggedRequest():
 
   if login() == False:
     print '登录失败'
+    loginfo.append('登录失败')
     return
 
   if webwxinit() == False:
     print '初始化失败'
+    loginfo.append('初始化失败')
     return
 
   MemberList = webwxgetcontact()
 
   MemberCount = len(MemberList)
   print '通讯录共%s位好友' % MemberCount
+  loginfo.append('通讯录共%s位好友' % MemberCount)
 
   ChatRoomName = ''
   result = []
@@ -98,7 +102,9 @@ def loggedRequest():
       NickNames.append(Member['NickName'].encode('utf-8'))
 
     print '第%s组...' % (i + 1)
+    loginfo.append('第%s组...' % (i + 1))
     print ', '.join(NickNames)
+    loginfo.append(', '.join(NickNames))
 
     # 新建群组/添加成员
     if ChatRoomName == '':
@@ -111,6 +117,7 @@ def loggedRequest():
       result += DeletedList
 
     print '找到%s个被删好友' % DeletedCount
+    loginfo.append('找到%s个被删好友' % DeletedCount)
     # raw_input()
 
     # 删除成员
@@ -133,9 +140,9 @@ def loggedRequest():
   return resultNames
 
 class LogInHandler(tornado.web.RequestHandler):
-  def post(self):
+  def get(self):
     result = loggedRequest()
-    self.render('friend.html', title='WeChat', result=result)
+    self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
 
 class HomeHandler(tornado.web.RequestHandler):
   def get(self):
@@ -150,27 +157,27 @@ class HomeHandler(tornado.web.RequestHandler):
 
     if getUUID() == False:
       print '获取uuid失败'
+      loginfo.append('获取uuid失败')
       return
 
     url = 'https://login.weixin.qq.com/qrcode/' + uuid
     showQRImage()
-    self.render('home.html', title='WeChat',
-                devices=devices, url=url)
+    self.render('home.html', title='微信被删好友查询', url=url)
 
 
 def showQRImage():
   global tip
 
-  url = 'https://login.weixin.qq.com/qrcode/' + uuid
-  params = {
-  't': 'webwx',
-  '_': int(time.time()),
-  }
+  #url = 'https://login.weixin.qq.com/qrcode/' + uuid
+  #params = {
+  #'t': 'webwx',
+  #'_': int(time.time()),
+  #}
 
-  request = urllib2.Request(url=url, data=urllib.urlencode(params))
-  response = urllib2.urlopen(request)
-  data = response.read()
-  print data
+  #request = urllib2.Request(url=url, data=urllib.urlencode(params))
+  #response = urllib2.urlopen(request)
+  #data = response.read()
+  #print data
 
   tip = 1
 
@@ -193,6 +200,7 @@ def waitForLogin():
 
   if code == '201':  # 已扫描
     print '成功扫描,请在手机上点击确认以登录'
+    loginfo.append('成功扫描,请在手机上点击确认以登录')
     tip = 0
   elif code == '200':  # 已登录
     print '正在登录...'

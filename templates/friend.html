@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block body %}
+  <div id='log'>
+   {% for r in loginfo %}
+       <div>{{r}}</div>
+   {% end %}
+  </div>
+  您的如下好友已将您从微信好友中删除：
+  <div id='rs'>
+   {% for l in result %}
+       <div>{{l}}</div>
+    {% end %}
+  </div>
+{% end %}

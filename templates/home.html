@@ -2,9 +2,22 @@
 
 {% block body %}
    <img src="{{ url }}" alt="请扫描微信二维码登录">
+  <div id='step'>
+    电脑端查询步骤:
+    <ol>
+      <li>使用电脑桌面浏览器打开网页 <a href='http://cnaqi.com/' title='访问http://cnaqi.com/'>http://cnaqi.com/</a></li>
+      <li>登录手机微信-&gt;发现-&gt;扫一扫-&gt;扫描该页面的二维码-&gt;点击登录微信</li>
+      <li>在电脑桌面浏览器中点击 <a href="login" title='我已成功登录微信'>我已成功登录微信</a></li>
+    </ol>
+    您也可以使用手机查询：
+    <ol>
+      <li>使用手机浏览器打开网页 <a href='http://cnaqi.com/' title='访问http://cnaqi.com/'>http://cnaqi.com/</a></li>
+      <li>截屏带有二维码的图片并保存(iPhone: 电源键+Home键; Android:电源键+音量减小键)</li>
+      <li>切换到微信客户端并登录</li>
+      <li>登录手机微信-&gt;发现-&gt;扫一扫-&gt;相册-&gt;选择截取带二维码的图片-&gt;点击登录微信</li>
+      <li>切换到手机浏览器, 点击<a href="login" title='我已成功登录微信'>我已成功登录微信</a></li>
+    </ol>
 
-    <form method='post' action='/login'>
-      <input name='update' id='update' type='submit' value='Log In'>
-     </form>
+  </div>
 
 {% end %}
