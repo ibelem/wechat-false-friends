@@ -17,7 +17,8 @@ define('port', default=8080, help='run the given port', type=int)
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r'/', wdf.HomeHandler)
+            (r'/', wdf.HomeHandler),
+            (r'/login', wdf.LogInHandler)
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),

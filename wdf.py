@@ -99,8 +99,6 @@ def loggedRequest():
 
     print '第%s组...' % (i + 1)
     print ', '.join(NickNames)
-    print '回车键继续...'
-    raw_input()
 
     # 新建群组/添加成员
     if ChatRoomName == '':
@@ -132,9 +130,14 @@ def loggedRequest():
   print '---------- 被删除的好友列表 ----------'
   print '\n'.join(resultNames)
   print '-----------------------------------'
+  return resultNames
+
+class LogInHandler(tornado.web.RequestHandler):
+  def post(self):
+    result = loggedRequest()
+    self.render('friend.html', title='WeChat', result=result)
 
 class HomeHandler(tornado.web.RequestHandler):
-  @tornado.web.asynchronous
   def get(self):
     devices = ['a', 'b', 'c']
     if not devices:
@@ -154,12 +157,6 @@ class HomeHandler(tornado.web.RequestHandler):
     self.render('home.html', title='WeChat',
                 devices=devices, url=url)
 
-  def on_response(self, response):
-      if response.error: raise tornado.web.HTTPError(500)
-      json = tornado.escape.json_decode(response.body)
-      self.write("Fetched " + str(len(json["entries"])) + " entries "
-                 "from the FriendFeed API")
-      self.finish()
 
 def showQRImage():
   global tip

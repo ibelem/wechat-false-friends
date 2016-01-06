@@ -3,4 +3,8 @@
 {% block body %}
    <img src="{{ url }}" alt="请扫描微信二维码登录">
 
+    <form method='post' action='/login'>
+      <input name='update' id='update' type='submit' value='Log In'>
+     </form>
+
 {% end %}
