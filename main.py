@@ -18,7 +18,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r'/', wdf.HomeHandler),
-            (r'/login', wdf.LogInHandler)
+            (r'/search', wdf.SearchHandler)
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),

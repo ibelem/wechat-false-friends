@@ -68,14 +68,6 @@ def getUUID():
   return False
 
 def loggedRequest():
-  while waitForLogin() != '200':
-    pass
-
-  if login() == False:
-    print '登录失败'
-    loginfo.append('登录失败')
-    return
-
   if webwxinit() == False:
     print '初始化失败'
     loginfo.append('初始化失败')
@@ -139,19 +131,23 @@ def loggedRequest():
   print '-----------------------------------'
   return resultNames
 
-class LogInHandler(tornado.web.RequestHandler):
-  def get(self):
-    result = loggedRequest()
-    self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
+class SearchHandler(tornado.web.RequestHandler):
+  def post(self):
+    while waitForLogin() != '200':
+      pass
+
+    if login() == False:
+      result = ['']
+      loginfo = ['登录失败']
+      print '登录失败'
+      self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
+    else:
+      loggedRequest()
+      result = loggedRequest()
+      self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
 
 class HomeHandler(tornado.web.RequestHandler):
   def get(self):
-    devices = ['a', 'b', 'c']
-    if not devices:
-      raise tornado.web.HTTPError(404)
-    t = ['1', '2']
-    #main();
-
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookielib.CookieJar()))
     urllib2.install_opener(opener)
 
