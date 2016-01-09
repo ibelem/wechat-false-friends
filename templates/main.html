@@ -9,15 +9,16 @@
     <link rel='stylesheet' href='{{ static_url('style.css') }}' />
   </head>
   <body>
-    <header>{% block header %}{{ title }}{% end %}</header>
+    <header><a href='../' title='http://cnaqi.com'>{% block header %}{{ title }}{% end %}</a></header>
     <div id='wrapper'>
     {% block body %} body {% end %}
 
-    <div>本服务谢绝收集您的隐私信息, 没空.</div>
-    <div>本服务关键代码 fork 自: <a href="https://github.com/0x5e/wechat-deleted-friends">0x5e/wechat-deleted-friends</a></div>
+    <div>本服务不收集隐私信息, 没空.</div>
+ <div>主业务代码 fork 自 <a href="https://github.com/0x5e/wechat-deleted-friends">github</a>.</div>
+ <div>只简要进行了网页版转化, 未作性能改进.</div>
     </div>
     <footer>
-        {% block footer %}&copy;2016 Belem{% end %}
+        {% block footer %}&copy;2016 <a href='http://anr.io' title='http://anr.io'>Belem</a>{% end %}
     </footer>
 
   </body>

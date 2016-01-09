@@ -11,30 +11,25 @@ import json
 import sys
 import math
 import tornado
-
+import threading
 
 DEBUG = False
-
 MAX_GROUP_NUM = 35  # 每组人数
-
 QRImagePath = os.getcwd() + '/qrcode.jpg'
 
 tip = 0
 uuid = ''
-
 base_uri = ''
 redirect_uri = ''
-
 skey = ''
 wxsid = ''
 wxuin = ''
 pass_ticket = ''
 deviceId = 'e000000000000000'
-
 BaseRequest = {}
-
 ContactList = []
 My = []
+waitcode = ''
 loginfo = []
 
 
@@ -70,6 +65,7 @@ def getUUID():
   except Exception:
     return False
 
+resultfinal = []
 def loggedRequest():
   try:
     if webwxinit() == False:
@@ -93,11 +89,18 @@ def loggedRequest():
             break
 
           Member = MemberList[i * MAX_GROUP_NUM + j]
-          UserNames.append(Member['UserName'])
-          NickNames.append(Member['NickName'].encode('utf-8'))
+          MName = Member['UserName'].replace('<span class="emoji ','')
+          MName = MName.replace('"></span>','')
+          MName = MName.strip()
+          NName = Member['NickName'].encode('utf-8').replace('<span class="emoji ','')
+          NName = NName.replace('"></span>','')
+          NName = NName.strip()
+          UserNames.append(MName)
+          NickNames.append(NName)
 
         print '第%s组...' % (i + 1)
         loginfo.append('第%s组...' % (i + 1))
+
         print ', '.join(NickNames)
         loginfo.append(', '.join(NickNames))
 
@@ -131,25 +134,45 @@ def loggedRequest():
       print '---------- 被删除的好友列表 ----------'
       print '\n'.join(resultNames)
       print '-----------------------------------'
+      print resultNames
       return resultNames
   except Exception:
-    return loginfo
+    return ['获取失败, 请重试...']
+
+rs = ''
+
+def mainrequest():
+    waitcode = waitForLogin()
+    global rs
+    if waitcode == '408' or waitcode == '500' or waitcode == '500':
+      rs = waitcode
+    elif waitcode == '201':
+      rs = waitcode
+    else:
+      if login() == False:
+        rs = 'loginfailed'
+      else:
+        rs = '200'
+        global resultfinal
+        resultfinal = loggedRequest()
+    print rs
 
 class SearchHandler(tornado.web.RequestHandler):
   def post(self):
     try:
-      if waitForLogin() == '408':
+      loginfo[:]=[]
+      mainrequest()
+      print rs
+      if rs == '408' or rs == '500' or rs == '500':
         self.render('error.html', title='微信被删好友查询', ex='登录超时, 请确认您已经在微信客户端扫描二维码并登录.')
-      elif waitForLogin() == '201':
-        self.render('error.html', title='微信被删好友查询', ex='您已扫描二维码, 但并未登录.')
-      if login() == False:
-        result = ['']
-        loginfo2 = ['登录失败']
-        print '登录失败'
-        self.render('error.html', title='微信被删好友查询',ex=loginfo2)
+      elif rs == '201':
+        self.render('error.html', title='微信被删好友查询', ex='您已扫描二维码, 但并未登录. 请点击”登录“按钮后操作.')
       else:
-        result = loggedRequest()
-        self.render('friend.html', title='微信被删好友查询', result=result, loginfo=loginfo)
+        if rs == 'loginfailed':
+          self.render('error.html', title='微信被删好友查询',ex='二维码登录失败, 请重试.')
+        else:
+          print resultfinal
+          self.render('friend.html', title='微信被删好友查询', result=resultfinal, loginfo=loginfo)
     except Exception as ex:
       self.render('error.html', title='微信被删好友查询', ex=ex.message)
 
@@ -172,18 +195,6 @@ class HomeHandler(tornado.web.RequestHandler):
 
 def showQRImage():
   global tip
-
-  #url = 'https://login.weixin.qq.com/qrcode/' + uuid
-  #params = {
-  #'t': 'webwx',
-  #'_': int(time.time()),
-  #}
-
-  #request = urllib2.Request(url=url, data=urllib.urlencode(params))
-  #response = urllib2.urlopen(request)
-  #data = response.read()
-  #print data
-
   tip = 1
 
 def waitForLogin():
@@ -202,7 +213,6 @@ def waitForLogin():
 
     if code == '201':  # 已扫描
       print '成功扫描,请在手机上点击确认以登录'
-      loginfo.append('成功扫描,请在手机上点击确认以登录')
       tip = 0
     elif code == '200':  # 已登录
       print '正在登录...'
@@ -212,11 +222,12 @@ def waitForLogin():
       base_uri = redirect_uri[:redirect_uri.rfind('/')]
     elif code == '408':  # 超时
       pass
-    # elif code == '400' or code == '500':
+    elif code == '400' or code == '500':
+      pass
 
     return code
   except Exception:
-    return 408
+    return '408'
 
 def login():
   try:

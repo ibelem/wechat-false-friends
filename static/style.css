@@ -1,5 +1,5 @@
-body { color: #515151; font: 80%/1.5 Verdana,sans-serif; margin: 0px auto; text-shadow: 0px 1px 1px rgba(0,0,0,0.1); }
-header { font-family: Verdana, cursive; font-size: 16px; margin: 14px 0px 10px 10px; }
+body { color: #515151; background-color:#f4fafa; font: 80%/1.5 Verdana,sans-serif; margin: 0px auto; text-shadow: 0px 1px 1px rgba(0,0,0,0.1); }
+header { font-family: Verdana, cursive; font-size: 16px; margin: 14px auto; text-align: center;}
 nav { border: 1px solid #eee; height: 34px; border-top: 0px; }
 footer  { border-top: 1px solid #eee; padding: 10px; margin-botton: 10px; text-align:right; }
 
@@ -8,14 +8,16 @@ a:link, a:visited, a:active{ color: #d63597; padding: 1px; text-decoration: none
 a:hover{ color: #fff; background-color:#d63597; border-bottom: 1px dashed #fff;}
 
 
-img { width: 220px; height: 220px; padding: 0px; border: 1px solid #eee; margin: 20px; display: block; margin: 20px auto;}
+img { width: 200px; height: 200px; padding: 0px; border: 1px solid #eee; display: block; margin: 20px auto;}
 
 #wrapper { text-align: center; margin:10px auto; }
-#log { margin:10px auto; height: 320px; max-height:360px; text-align:left; padding:10px; overflow:auto; }
-#rs { margin:10px auto; height: 100px; max-height:120px; text-align:left; background-color:#d63597; color: #fff; padding:10px;}
+#log { margin:10px auto; max-height:260px; text-align:left; padding:10px; overflow:auto; font-size:11px; }
+#rs { margin:10px; max-height:120px; text-align:left; color: #d63597; padding:0px;border:#d63597 solid 1px;clear:both;}
 #step {margin:10px auto; text-align:left; padding:10px;}
-#note {margin:10px auto; text-align:left; padding:10px;}
+#note {margin:10px auto; text-align:left; padding:10px; clear: both;}
 
 #step form { margin: 0px auto; text-align: center; }
 #se { margin:0px auto; background-color:#d63597; color:#fff; padding: 8px 12px; border:1px solid #d63597; box-shadow: 1px 1px 2px rgba(0,0,0,0.5);  cursor:pointer; }
 #se:hover {  background-color:#c62587; box-shadow: 1px 1px 2px rgba(0,0,0,0.8);  cursor:pointer; }
+#lf { background-color:#d63597; padding: 8px;color:#fff; text-align:center; }
+#rt { padding: 10px; text-align:center;}

@@ -12,7 +12,7 @@ import wdf
 from tornado.template import Template
 
 from tornado.options import define, options
-define('port', default=8080, help='run the given port', type=int)
+define('port', default=9006, help='run the given port', type=int)
 
 class Application(tornado.web.Application):
     def __init__(self):
